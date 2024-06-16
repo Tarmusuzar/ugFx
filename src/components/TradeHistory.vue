@@ -3,7 +3,7 @@
   <horizontal-menu v-if="horizontal"></horizontal-menu>
   <div :class="['forex-signal-display', { dark: isDarkMode }]">
     <header>
-      <h1>Forex Signals</h1>
+      <h1>Trade History</h1>
       <i class="fas fa-sun" @click="toggleDarkMode"></i> 
       <button @click="horizonatalShow">Menu</button>
     </header>
@@ -14,8 +14,8 @@
           <tr>
             <th>Symbol</th>
             <th>Signal</th>
-            <th>Entry</th>
             <th>Take Profit</th>
+            <th>Time</th>
           </tr> 
         </thead>
         <tbody>
@@ -23,14 +23,13 @@
             <td>{{ signal.symbol }}</td>
             <td :style="{ color: signal.position === 'BUY' ? 'green' : 'red' }">{{ signal.position }}</td>
 
-            <td>{{ signal.price }}</td>
-            <td>{{ signal.tp }} </td>
+            <td>{{ signal.tp }}</td>
+            <td>{{ signal.time }} </td>
 
             
           </tr>
         </tbody>
       </table>
-      <p v-if="empty" style="text-align: center; margin-top: 7rem;">No Trades at the Moment</p>
     </div>
   </div>
 </template>
@@ -49,7 +48,6 @@ export default {
   },
   data() {
     return {
-      empty:false,
       signals: [],
       isDarkMode: false,
       loading:true,
@@ -79,7 +77,7 @@ export default {
         })
 
         const db = firebase.database();
-    const signalsRef = db.ref('forex');
+    const signalsRef = db.ref('deletedFx');
 
     // Fetch initial data
     signalsRef.once('value', (snapshot) => {
@@ -89,9 +87,6 @@ export default {
         this.signals = Object.values(data);
       
         this.loading= false
-      }else{
-        this.loading = false
-        this.empty = true
       }
     });
 

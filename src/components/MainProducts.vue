@@ -1,4 +1,14 @@
 <template>
+  <div class="pin" v-if="showPin">
+    <p style="color: white; margin-bottom: 1rem;">Enter Admin Pin</p>
+    <input type="number">
+    
+
+    <div>
+      <button style="background-color: green;">Delete</button>
+      <button style="background-color: red;" @click="showPin = false">Cancel</button>
+    </div>
+  </div>
   <loading-spinner v-if="loading"></loading-spinner>
   <horizontal-menu v-if="horizontal"></horizontal-menu>
   <div :class="['forex-signal-display', { dark: isDarkMode }]">
@@ -15,7 +25,9 @@
             <th>Symbol</th>
             <th>Signal</th>
             <th>Entry</th>
-            <th>Take Profit</th>
+            <th>Profit</th>
+            <th>Time</th>
+            <th></th>
           </tr> 
         </thead>
         <tbody>
@@ -25,6 +37,8 @@
 
             <td>{{ signal.price }}</td>
             <td>{{ signal.tp }} </td>
+            <td>{{ signal.time }} </td>
+            <td style=" color: red;font-weight: 800;" @click="deleteItem(signal.id)">X</td>
 
             
           </tr>
@@ -49,6 +63,8 @@ export default {
   },
   data() {
     return {
+      db:{},
+      showPin:false,
       empty:false,
       signals: [],
       isDarkMode: false,
@@ -57,7 +73,41 @@ export default {
     };
   },
   methods: {
+    deleteItem(id){
+      firebase.initializeApp({
+                apiKey: "AIzaSyBA3XZ9UkBN0mtJKzZNLFaCd1A9fPNjnBY",
+                authDomain: "my-vue-app-8da88.firebaseapp.com",
+                databaseURL: "https://my-vue-app-8da88-default-rtdb.firebaseio.com",
+                projectId: "my-vue-app-8da88",
+                storageBucket: "my-vue-app-8da88.appspot.com",
+                messagingSenderId: "460227304896",
+                appId: "1:460227304896:web:b60519493132d4ebca7c25",
+        })
+
+        const db = firebase.database();
+   
+      
+
+      db.ref('/forex').once('value', (snapshot) => {
+  const records = snapshot.val();
+  if(!records){
+    console.log('Empty Records')
+    return;
+  }
+  Object.keys(records).forEach((key) => {
+    const record = records[key];
+    if ( record.id == id ) {
+      
+     
+      db.ref('/forex/' + key).remove();
+      
+      
+    }  });
+});
+
+},
     horizonatalShow(){
+    
       this.horizontal =!this.horizontal
     },
     toggleDarkMode() {
@@ -79,6 +129,7 @@ export default {
         })
 
         const db = firebase.database();
+        this.db = firebase.database();
     const signalsRef = db.ref('forex');
 
     // Fetch initial data
@@ -121,6 +172,37 @@ export default {
 </script>
 
 <style scoped>
+.pin{
+  position: fixed;
+  top: 0;
+  left: 0;
+  background-color: black;
+  height: 100vh;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+
+
+}
+input{
+  padding: .2rem;
+  font-size: 1.2rem;
+  outline: green;
+  border: none;
+
+}
+button{
+  padding: .3rem;
+  margin: 1rem;
+  color: white;
+  font-weight: 400;
+  border: 1px solid white;
+  border-radius: 5px;
+
+
+}
 .forex-signal-display {
   max-width: 1000px;
   margin: 0 auto;
